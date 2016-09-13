@@ -85,11 +85,18 @@ public class ScrollableLayout extends LinearLayout {
     public ScrollableLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
+        //帮助类
+        // TODO: 2016/9/13
         mHelper = new ScrollableHelper();
+        //滑动辅助类，用于顺滑滑动
         mScroller = new Scroller(context);
+        //view配置类，获取一些view基本属性
         final ViewConfiguration configuration = ViewConfiguration.get(context);
+        //获取view最小滑动
         mTouchSlop = configuration.getScaledTouchSlop();
+        //滑动最小速度值
         mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
+        //滑动最大速度值
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
         sysVersion = Build.VERSION.SDK_INT;
         setOrientation(VERTICAL);
@@ -97,21 +104,29 @@ public class ScrollableLayout extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //获取第一个childview 为headview
         mHeadView = getChildAt(0);
-        if(mHeadView != null){
+        if(mHeadView != null){//headview存在
+            //测量mHeadView 宽度为this能给的最大，高度为mHeadView的高度
             measureChildWithMargins(mHeadView, widthMeasureSpec, 0, MeasureSpec.UNSPECIFIED, 0);
+            //获取mHeadView的测量高度,存于maxY
             maxY = mHeadView.getMeasuredHeight();
+            //获取mHeadView的测量高度  存于mHeadHeight
             mHeadHeight = mHeadView.getMeasuredHeight();
         }
+        // TODO: 2016/9/13  目的？？？ 
+        //测量this的大小，宽为该view的宽，高为this的测量高度+mHeadView测量高度
         super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(heightMeasureSpec) + maxY, MeasureSpec.EXACTLY));
     }
 
     @Override
     protected void onFinishInflate() {
+        //mHeadView满足条件设置可点击
         if (mHeadView != null && !mHeadView.isClickable()) {
             mHeadView.setClickable(true);
         }
         int childCount = getChildCount();
+        //遍历子view，判断是否存在viewpager
         for (int i = 0; i < childCount; i++) {
             View childAt = getChildAt(i);
             if (childAt != null && childAt instanceof ViewPager) {
@@ -123,48 +138,72 @@ public class ScrollableLayout extends LinearLayout {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
+        //存储当前点击坐标X
         float currentX = ev.getX();
+        //存储当前点击坐标Y
         float currentY = ev.getY();
+        //增量Y
         float deltaY;
+        //移动X
         int shiftX;
+        //移动Y
         int shiftY;
+        //mDownX 首次为0
         shiftX = (int) Math.abs(currentX - mDownX);
         shiftY = (int) Math.abs(currentY - mDownY);
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                //不允许事件拦截
                 mDisallowIntercept = false;
+                //不允许横向滑动
                 mIsHorizontalScrolling = false;
+                //获取屏幕坐标系X
                 x_down = ev.getRawX();
+                //获取屏幕坐标系Y
                 y_down = ev.getRawY();
                 flag1 = true;
                 flag2 = true;
+                //记录本次按下坐标位置，用于计算shift值
                 mDownX = currentX;
+                //记录本次按下坐标位置，用于计算shift值
                 mDownY = currentY;
+
                 mLastX = currentX;
                 mLastY = currentY;
+                //获取view（this）的滑动距离
                 mScrollY = getScrollY();
+                //判断当前按下位置是否在mHeadView范围内
                 checkIsClickHead((int) currentY, mHeadHeight, getScrollY());
+                //初始化速度获取器
                 initOrResetVelocityTracker();
+                //给速度计算器添加一个事件，用于计算
                 mVelocityTracker.addMovement(ev);
+                //强制结束当前滑动
                 mScroller.forceFinished(true);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mDisallowIntercept) {
                     break;
                 }
+               //初始化速度计算器如果未初始化过
                 initVelocityTrackerIfNotExists();
+                //给速度计算器添加n个事件，用于计算
                 mVelocityTracker.addMovement(ev);
+                //计算Y偏移量，按下位置-当前位置
                 deltaY = mLastY - currentY;
                 if (flag1) {
                     if (shiftX > mTouchSlop && shiftX > shiftY) {
+                        //如果是横向滑动
                         flag1 = false;
                         flag2 = false;
                     } else if (shiftY > mTouchSlop && shiftY > shiftX) {
+                        //如果是竖向滑动
                         flag1 = false;
                         flag2 = true;
                     }
                 }
 
+                //如果当前滑动距离不等于mheadview的测量高度或者可滑动的子view在顶部,isSticked()足够
                 if (flag2 && shiftY > mTouchSlop && shiftY > shiftX && (!isSticked() || mHelper.isTop())) {
                     if (childViewPager != null) {
                         childViewPager.requestDisallowInterceptTouchEvent(true);

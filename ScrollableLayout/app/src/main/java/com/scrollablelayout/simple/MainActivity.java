@@ -73,6 +73,13 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         ly_page2 = (RelativeLayout) findViewById(R.id.ly_page2);
         tv_page2 = (TextView) findViewById(R.id.tv_page2);
 
+        findViewById(R.id.iv_arrow).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,Main2Activity.class));
+            }
+        });
+
         iv_spit.setVisibility(View.GONE);
         tv_title.setTranslationY(-1000);
         sl_root.setOnScrollListener(new ScrollableLayout.OnScrollListener() {

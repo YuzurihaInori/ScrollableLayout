@@ -1,14 +1,17 @@
 package com.scrollablelayout.simple;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -22,6 +25,7 @@ public class RecyclerViewGridSimpleFragment extends BaseFragment {
 
     private View view;
     private RecyclerView recyclerView;
+    private SwipeRefreshLayout refresh_layout;
 
     public static RecyclerViewGridSimpleFragment newInstance() {
         RecyclerViewGridSimpleFragment fragment = new RecyclerViewGridSimpleFragment();
@@ -37,6 +41,7 @@ public class RecyclerViewGridSimpleFragment extends BaseFragment {
     }
 
     public void initRecyclerView(View view) {
+        refresh_layout = (SwipeRefreshLayout) view.findViewById(R.id.refresh_layout);
         recyclerView = (RecyclerView) view.findViewById(R.id.v_scroll);
         recyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
@@ -46,6 +51,23 @@ public class RecyclerViewGridSimpleFragment extends BaseFragment {
         PhotoAdapter recyclerAdapter = new PhotoAdapter();
         recyclerAdapter.setPhotos(createItemList());
         recyclerView.setAdapter(recyclerAdapter);
+
+        refresh_layout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh_layout.setRefreshing(true);
+
+                ( new Handler()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        refresh_layout.setRefreshing(false);
+                        Toast.makeText(getActivity(),"刷新成功",Toast.LENGTH_LONG).show();
+                    }
+                }, 3000);
+            }
+        });
+
+
     }
 
     private List<RecyclerBean> createItemList() {

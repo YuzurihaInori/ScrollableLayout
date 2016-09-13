@@ -4,6 +4,7 @@ package com.scrollablelayout;
 import android.annotation.SuppressLint;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -44,6 +45,7 @@ public class ScrollableHelper {
         return mCurrentScrollableCainer.getScrollableView();
     }
 
+    //判断可滑动组件是
     public boolean isTop() {
         View scrollableView = getScrollableView();
         if (scrollableView == null) {
